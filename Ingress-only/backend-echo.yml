@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpecho-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-pod
+  template:
+    metadata:
+      labels:
+        app: echo-pod
+    spec:
+      containers:
+        - name: echo-container
+          image: mendhak/http-https-echo:17
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "1m"
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-service
+spec:
+  selector:
+    app: echo-pod
+  type: LoadBalancer
+  ports:
+    - port: 8443
+      targetPort: 443
+      name: http
+    - port: 8480
+      targetPort: 80
+      name: https

@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "azure-api-management/gateway"
+    ingressclass.kubernetes.io/is-default-class: "true"
+spec:
+  tls:
+    - hosts:
+        - foo.bar.com
+      secretName: tls-foo-bar-com
+  rules:
+    - host: "*.bar.com"
+      http:
+        paths:
+          - path: /bin
+            pathType: Prefix
+            backend:
+              serviceName: httpbin-service
+              servicePort: 8081
+          - path: /echo
+            pathType: Prefix
+            backend:
+              serviceName: echo-service
+              servicePort: 8480
+    - http:
+        paths:
+          - path: /echo2
+            pathType: Prefix
+            backend:
+              serviceName: echo-service
+              servicePort: 8480
