@@ -14,7 +14,7 @@ With this experimental support in Azure API Management Gateway following feature
 - API route exposure
 - Supports both [Exact and Prefix](https://v1-18.docs.kubernetes.io/docs/concepts/services-networking/ingress/#path-types) path types
 
-To enable ingress support, following environment variables need to be setup ([link to template](../../tree/main/Ingress-only/ingress-deployment.yml#L29-L34)):
+To enable ingress support, the following environment variables need to be set up ([link to template](../../tree/main/Ingress-only/ingress-deployment.yml#L29-L34)):
 
 - `k8s.ingress.enabled` 
 - Ingress object should include the annotation `kubernetes.io/ingress.class: "azure-api-management/gateway"`
@@ -22,19 +22,19 @@ To enable ingress support, following environment variables need to be setup ([li
 
 [Kubernetes Ingress only samples and walkthrough](../../tree/main/Ingress-only)
 
-## Hybrid support with cloud configuration
+## Hybrid support with a cloud configuration
 Normally self-hosted gateway would have the environment variables needed to communicate to Azure API Management service which deployed to the cloud to retrieve the configuration:
 - `config.service.endpoint` 
 - `config.service.auth`
 
-Here is the [snippet](https://github.com/Azure/api-management-self-hosted-gateway/blob/master/examples/self-hosted-gateway-with-configuration-backup.yaml#L39-L47) of the configuration and [dcoumentation on Azure docs site](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes)
+Here is the [snippet](https://github.com/Azure/api-management-self-hosted-gateway/blob/master/examples/self-hosted-gateway-with-configuration-backup.yaml#L39-L47) of the configuration and [article on the Azure documentation site](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes)
 
 Combining all those environment variables would give the power of configuring basic routes via Kubernetes Ingress routes and the full power of Azure API Management policies and transformations via cloud configuration.
 
 ### How is configuration applied
-Upon starting new instance of the self-hosted gateway container, it looks for ingress in the namespace passed as environment variable `k8s.ingress.namespace` and creates routes, certificates, hostnames and gateway entities. 
-Next, looking at `config.service.*` settings, the gateways is trying to connect to cloud service to fetch cloud configuration snapshot and starts listening to configurtion changes.
-From that point the gateway is initizalized and confguration changes from Ingress and Cloud configuration are applied in **last one wins**. 
+Upon starting a new instance of the self-hosted gateway container, it looks for ingress in the namespace passed as an environment variable `k8s.ingress.namespace` and creates routes, certificates, hostnames, and gateway entities. 
+Next, looking at `config.service.*` settings, the gateway is connecting to the cloud service to fetch cloud configuration snapshot and starts listening on configuration changes.
+From that point the gateway is initialized and confguration changes from Ingress and Cloud configuration are applied in **last one wins** strategy. 
 Periodically, the gateway is creating a snapshot of the most recent effective confguration from the cloud to be able to load faster on next boot. Kubernetes Ingress objects are not added to the snapshot as those are cluster specific and on next gateway boot might be different.
 
 **Important**: Snapshot and configuration change events from dual source can create discrepancy on the active configuration in case of conflict. For example consifer following order:

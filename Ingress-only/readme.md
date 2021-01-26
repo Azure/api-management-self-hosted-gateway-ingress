@@ -6,14 +6,15 @@ With this experimental support in Azure API Management Gateway following feature
 - API route exposure
 - Supports both [Exact and Prefix](https://v1-18.docs.kubernetes.io/docs/concepts/services-networking/ingress/#path-types) path types
 
-To enable ingress support, following environment variables need to be setup ([link to template](.\ingress-only\ingress-deployment.yml#L29-L34)):
+To enable ingress support, the following environment variables need to be set up ([link to template](ingress-deployment.yml#L29-L34)):
+
 - `k8s.ingress.enabled` 
 - Ingress object should include the annotation `kubernetes.io/ingress.class: "azure-api-management/gateway"`
 - `k8s.ingress.namespace` - optional namespace where ingress is read from
 
 ## Walkthrough
-In this example we will setup a namespace `gw` which will contain all resources. Self-hosted gateway file contains [RBAC configuration]() that specifies this namespace so it is better to stick to it
-One of the deployments is a container that echoes back all HTTP/HTTPS traffic [mendhak/http-https-echo:17](https://github.com/mendhak/docker-http-https-echo). Also see latest tags on [DockerHub](https://hub.docker.com/r/mendhak/http-https-echo/tags?page=1&ordering=last_updated)
+In this example, we will set up a namespace `gw` which will contain all resources. Self-hosted gateway file contains [RBAC configuration]() that specifies this namespace so it is better to stick to it
+One of the deployments is a container that echoes back all HTTP/HTTPS traffic [mendhak/http-https-echo:17](https://github.com/mendhak/docker-http-https-echo). Also, see the latest tags on [DockerHub](https://hub.docker.com/r/mendhak/http-https-echo/tags?page=1&ordering=last_updated)
 
 ### Deploying backend API service 
 Let's start by creating the namespace and deploying the backend and service defined in [backend-echo.yml](backend-echo.yml):
@@ -23,13 +24,13 @@ kubectl create namespace gw
 kubectl apply -f backend-echo.yml -n=gw
 ```
 
-### Deploying API Managment self-hosted gateway
-Next let's deploy self-hosted gateway from [ingress-deployment.yml](ingress-deployment.yml)
+### Deploying API Management self-hosted gateway
+Next, let's deploy the self-hosted gateway from [ingress-deployment.yml](ingress-deployment.yml)
 ```
 kubectl apply -f ingress-deployment.yml -n=gw
 ```
 
-At that point your namespace should looks like this:
+At that point your namespace should look like this:
  ```
 > kubectl get all -n=gw
 NAME                                       READY   STATUS    RESTARTS   AGE
@@ -55,7 +56,7 @@ NAME                           TYPE           CLUSTER-IP     EXTERNAL-IP     POR
 service/apim-ingress-service   LoadBalancer   10.0.234.184   40.125.75.211   80:31394/TCP,443:31170/TCP   4m33s
 service/echo-service           ClusterIP      10.0.26.176    <none>          8080/TCP                     4m20s
 ```
-`apim-ingress-service` is exposed publicly and thus has external IP address, while for echo-service, we don't want to have it accesible outside the cluster directly.
+`apim-ingress-service` is exposed publicly and thus has an external IP address, while for echo-service, we don't want to have it accessible outside the cluster directly.
 
 ### Deploying ingress rules
 Now let's expose `echo-service` application via Ingress rules
@@ -65,7 +66,7 @@ ingress.networking.k8s.io/ingress created
 ```
 
 ### Testing HTTP calls
-Now that we have everything configured, let's make HTTP call. Using external IP address `40.125.75.211` in the case above:
+Now that we have everything configured, let's make an HTTP call. Using an external IP address `40.125.75.211` in the case above:
 ```
 > curl http://40.125.75.211/echo/hello/ingress   
 {
