@@ -14,12 +14,13 @@ With this experimental support in Azure API Management Gateway following feature
 - API route exposure
 - Supports both [Exact and Prefix](https://v1-18.docs.kubernetes.io/docs/concepts/services-networking/ingress/#path-types) path types
 
-To enable ingress support, following environment variables need to be setup ([link to template](.\ingress-only\ingress-controller-deployment.yml#L29-L34)):
+To enable ingress support, following environment variables need to be setup ([link to template](../../tree/main/Ingress-only/ingress-deployment.yml#L29-L34)):
+
 - `k8s.ingress.enabled` 
 - Ingress object should include the annotation `kubernetes.io/ingress.class: "azure-api-management/gateway"`
 - `k8s.ingress.namespace` - optional namespace where ingress is read from
 
-[Kubernetes Ingress only samples and walkthrough](.\ingress-only\readme.md)
+[Kubernetes Ingress only samples and walkthrough](../../tree/main/Ingress-only)
 
 ## Hybrid support with cloud configuration
 Normally self-hosted gateway would have the environment variables needed to communicate to Azure API Management service which deployed to the cloud to retrieve the configuration:
