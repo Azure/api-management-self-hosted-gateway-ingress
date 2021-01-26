@@ -1,21 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: apim-ingress-controller-pod
+  name: apim-ingress-pod
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: apim-ingress-controller-pod
+      app: apim-ingress-pod
   template:
     metadata:
       labels:
-        app: apim-ingress-controller-pod
+        app: apim-ingress-pod
     spec:
+      imagePullSecrets:
+        - name: apimdev
       containers:
         - name: azure-apim-gateway
-          image: azure-api-management/gateway:dev
-          imagePullPolicy: Never
+          image: apimdev.azurecr.io/azure-api-management/gateway:1.2.0-ingress-1
           ports:
             - name: http
               containerPort: 8080
@@ -36,10 +37,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: apim-ingress-controller-service
+  name: apim-ingress-service
 spec:
   selector:
-    app: apim-ingress-controller-pod
+    app: apim-ingress-pod
   type: LoadBalancer
   ports:
     - port: 80

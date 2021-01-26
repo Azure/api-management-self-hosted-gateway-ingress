@@ -20,21 +20,17 @@ spec:
               memory: "128Mi"
               cpu: "1m"
           ports:
-            - containerPort: 80
-            - containerPort: 443
+            - containerPort: 8080 
+              name: http
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: echo-service
 spec:
+  type: ClusterIP
   selector:
     app: echo-pod
-  type: LoadBalancer
   ports:
-    - port: 8443
-      targetPort: 443
-      name: http
-    - port: 8480
-      targetPort: 80
-      name: https
+    - port: 8080
+      targetPort: 8080

@@ -6,7 +6,7 @@ With this experimental support in Azure API Management Gateway following feature
 - API route exposure
 - Supports both [Exact and Prefix](https://v1-18.docs.kubernetes.io/docs/concepts/services-networking/ingress/#path-types) path types
 
-To enable ingress support, following environment variables need to be setup ([link to template](.\ingress-only\ingress-controller-deployment.yml#L29-L34)):
+To enable ingress support, following environment variables need to be setup ([link to template](.\ingress-only\ingress-deployment.yml#L29-L34)):
 - `k8s.ingress.enabled` 
 - Ingress object should include the annotation `kubernetes.io/ingress.class: "azure-api-management/gateway"`
 - `k8s.ingress.namespace` - optional namespace where ingress is read from
@@ -31,21 +31,130 @@ kubectl apply -f ingress-deployment.yml -n=gw
 
 At that point your namespace should looks like this:
  ```
- > kubectl get all -n=gw
-NAME                                               READY   STATUS    RESTARTS   AGE
-pod/apim-ingress-pod-6655496c5f-kctjz   1/1     Running   0          49s
-pod/httpecho-deployment-594f697f6-69t4l            1/1     Running   0          49s
+> kubectl get all -n=gw
+NAME                                       READY   STATUS    RESTARTS   AGE
+pod/apim-ingress-pod-69864d749b-s6nnm      1/1     Running   0          40s
+pod/httpecho-deployment-57c4686bdb-rwzfq   1/1     Running   0          29s
 
-NAME                                      TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)                         AGE
-service/apim-ingress-service   LoadBalancer   10.99.197.181   <pending>     80:32603/TCP,443:30444/TCP      49s
-service/echo-service                      LoadBalancer   10.108.169.48   <pending>     8443:31955/TCP,8480:30535/TCP   49s
+NAME                           TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
+service/apim-ingress-service   LoadBalancer   10.0.11.47     <pending>     80:30879/TCP,443:32764/TCP   40s
+service/echo-service           ClusterIP      10.0.142.199   <none>        8443/TCP,8480/TCP            29s
 
-NAME                                          READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/apim-ingress-pod   1/1     1            1           49s
-deployment.apps/httpecho-deployment           1/1     1            1           49s
+NAME                                  READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/apim-ingress-pod      1/1     1            1           40s
+deployment.apps/httpecho-deployment   1/1     1            1           29s
 
-NAME                                                     DESIRED   CURRENT   READY   AGE
-replicaset.apps/apim-ingress-pod-6655496c5f   1         1         1       49s
-replicaset.apps/httpecho-deployment-594f697f6            1         1         1       49s
-
+NAME                                             DESIRED   CURRENT   READY   AGE
+replicaset.apps/apim-ingress-pod-69864d749b      1         1         1       40s
+replicaset.apps/httpecho-deployment-57c4686bdb   1         1         1       29s
  ```
+
+Note the line below. If you are using AKS it might take a few minutes until you get EXTERNAL-IP address filled
+```
+NAME                           TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)                      AGE
+service/apim-ingress-service   LoadBalancer   10.0.234.184   40.125.75.211   80:31394/TCP,443:31170/TCP   4m33s
+service/echo-service           ClusterIP      10.0.26.176    <none>          8080/TCP                     4m20s
+```
+`apim-ingress-service` is exposed publicly and thus has external IP address, while for echo-service, we don't want to have it accesible outside the cluster directly.
+
+### Deploying ingress rules
+Now let's expose `echo-service` application via Ingress rules
+```
+> kubectl apply -f ingress.yml -n=gw3
+ingress.networking.k8s.io/ingress created
+```
+
+### Testing HTTP calls
+Now that we have everything configured, let's make HTTP call. Using external IP address `40.125.75.211` in the case above:
+```
+> curl http://40.125.75.211/echo/hello/ingress   
+{
+  "path": "/echo/hello/ingress",
+  "headers": {
+    "accept": "*/*",
+    "user-agent": "curl/7.55.1",
+    "host": "echo-service.gw3.svc.cluster.local:8080",
+    "x-forwarded-for": "10.240.0.5"
+  },
+  "method": "GET",
+  "body": "",
+  "fresh": false,
+  "hostname": "echo-service.gw3.svc.cluster.local",   
+  "ip": "10.240.0.5",
+  "ips": [
+    "10.240.0.5"
+  ],
+  "protocol": "http",
+  "query": {},
+  "subdomains": [
+    "svc",
+    "gw3",
+    "echo-service"
+  ],
+  "xhr": false,
+  "os": {
+    "hostname": "httpecho-deployment-7758b7747f-c4dbk"
+  },
+  "connection": {}
+}
+```
+
+## Configuring SSL and host name
+To confgure hostname we need to do following steps:
+1. Configure TLS certificate 
+1. Configure host name in the ingress
+1. Setup DNS server to the External IP
+
+Let's start in order:
+### 1. Generate TLS certificate
+Following command will generate TSL certificate and upload it as a secret to Kubernetes cluster from where Self-hosted gateway can get it. For the purpose we can use [OpenSSL](https://github.com/openssl/openssl#download)
+```
+"C:\Program Files\OpenSSL-Win64\bin\openssl" req -x509 -nodes -days 365 -newkey rsa:2048 -keyout www.contoso.com.key -out www.contoso.com.cer -subj "/CN=www.contoso.com/O=www.contoso.com"
+kubectl create secret tls tls-www-contoso-com --key www.contoso.com.key --cert www.contoso.com.cer -n=gw
+``` 
+### 2. Configure host name in the Ingress object
+There is a separate file [ingress-tls](ingress-tls.yml) which has the full configuration, but the main changes are in the section [tls section](ingress-tls.yml#L9-L12). Let's apply new rules
+```
+kubectl apply -f .\ingress-tls.yml -n=gw
+ingress.networking.k8s.io/ingress configured
+```
+
+### 3. Configure DNS server
+Let's map `www.contoso.com` to `40.125.75.211`:
+- For Windows, this can be done in [host file](https://gist.github.com/zenorocha/18b10a14b2deb214dc4ce43a2d2e2992) 
+- For Linux use  [/etc/hosts](https://linuxize.com/post/how-to-edit-your-hosts-file) 
+
+Now let's test the call again (Note the `--insecure` flag as the certificate is self-signed and will not be trusted):
+```
+> curl --insecure https://www.contoso.com/echo/hello/ingress    
+{
+  "path": "/echo/hello/ingress",
+  "headers": {
+    "accept": "*/*",
+    "user-agent": "curl/7.55.1",
+    "host": "echo-service.gw3.svc.cluster.local:8080",
+    "x-forwarded-for": "10.244.3.1"
+  },
+  "method": "GET",
+  "body": "",
+  "fresh": false,
+  "hostname": "echo-service.gw3.svc.cluster.local",
+  "ip": "10.244.3.1",
+  "ips": [
+    "10.244.3.1"
+  ],
+  "protocol": "http",
+  "query": {},
+  "subdomains": [
+    "svc",
+    "gw3",
+    "echo-service"
+  ],
+  "xhr": false,
+  "os": {
+    "hostname": "httpecho-deployment-7758b7747f-c4dbk"
+  },
+  "connection": {}
+}
+```
+ 
