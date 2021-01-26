@@ -32,4 +32,17 @@ Here is the [snippet](https://github.com/Azure/api-management-self-hosted-gatewa
 Combining all those environment variables would give the power of configuring basic routes via Kubernetes Ingress routes and the full power of Azure API Management policies and transformations via cloud configuration.
 
 ### How is configuration applied
-Upon starting new instance of the self-hosted gateway container
+Upon starting new instance of the self-hosted gateway container, it looks for ingress in the namespace passed as environment variable `k8s.ingress.namespace` and creates routes, certificates, hostnames and gateway entities. 
+Next, looking at `config.service.*` settings, the gateways is trying to connect to cloud service to fetch cloud configuration snapshot and starts listening to configurtion changes.
+From that point the gateway is initizalized and confguration changes from Ingress and Cloud configuration are applied in **last one wins**. 
+Periodically, the gateway is creating a snapshot of the most recent effective confguration from the cloud to be able to load faster on next boot. Kubernetes Ingress objects are not added to the snapshot as those are cluster specific and on next gateway boot might be different.
+
+**Important**: Snapshot and configuration change events from dual source can create discrepancy on the active configuration in case of conflict. For example consifer following order:
+1. Self-hosted gateway boots on the K8 clusters in hybrid configuration mode.
+1. Cloud configuration is adding `/users` API. 
+1. Ingress is adding a new `/users` route this overwriting the cloud API.
+1. All runtime calls will be executed as per Ingress confguration
+
+Now if the pod is torn down or nodes reboot, configuration will be loaded as:
+1. Loading ingress object which has `/users` route
+1. Cloud confguration snapshot will overwrite `/users` route from snapshot. 
