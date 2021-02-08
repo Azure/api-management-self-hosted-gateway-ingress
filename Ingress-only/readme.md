@@ -61,7 +61,7 @@ service/echo-service           ClusterIP      10.0.26.176    <none>          808
 ### Deploying ingress rules
 Now let's expose `echo-service` application via Ingress rules
 ```
-> kubectl apply -f ingress.yml -n=gw3
+> kubectl apply -f ingress.yml -n=gw
 ingress.networking.k8s.io/ingress created
 ```
 
@@ -74,13 +74,13 @@ Now that we have everything configured, let's make an HTTP call. Using an extern
   "headers": {
     "accept": "*/*",
     "user-agent": "curl/7.55.1",
-    "host": "echo-service.gw3.svc.cluster.local:8080",
+    "host": "echo-service.gw.svc.cluster.local:8080",
     "x-forwarded-for": "10.240.0.5"
   },
   "method": "GET",
   "body": "",
   "fresh": false,
-  "hostname": "echo-service.gw3.svc.cluster.local",   
+  "hostname": "echo-service.gw.svc.cluster.local",   
   "ip": "10.240.0.5",
   "ips": [
     "10.240.0.5"
@@ -89,7 +89,7 @@ Now that we have everything configured, let's make an HTTP call. Using an extern
   "query": {},
   "subdomains": [
     "svc",
-    "gw3",
+    "gw",
     "echo-service"
   ],
   "xhr": false,
@@ -133,13 +133,13 @@ Now let's test the call again (Note the `--insecure` flag as the certificate is 
   "headers": {
     "accept": "*/*",
     "user-agent": "curl/7.55.1",
-    "host": "echo-service.gw3.svc.cluster.local:8080",
+    "host": "echo-service.gw.svc.cluster.local:8080",
     "x-forwarded-for": "10.244.3.1"
   },
   "method": "GET",
   "body": "",
   "fresh": false,
-  "hostname": "echo-service.gw3.svc.cluster.local",
+  "hostname": "echo-service.gw.svc.cluster.local",
   "ip": "10.244.3.1",
   "ips": [
     "10.244.3.1"
@@ -148,7 +148,7 @@ Now let's test the call again (Note the `--insecure` flag as the certificate is 
   "query": {},
   "subdomains": [
     "svc",
-    "gw3",
+    "gw",
     "echo-service"
   ],
   "xhr": false,
