@@ -1,0 +1,89 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: k8se-gw-token
+type: Opaque
+stringData:
+  value: "GatewayKey k8se-gw&202103102026&8Lcvoh7yIIZ4Y3XBF8azr+8/qVIEg6gSf8jH7kDJMqIIAzsDLmCuk+07a/HmNDPb7RYl1v76EaeVrL6zNtXWGQ=="
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azure-apim-gateway-environment
+data:
+  config.service.endpoint: "https://galin-test-prod-1.management.azure-api.net/subscriptions/a39747ec-b5c4-45de-82a1-935083247170/resourceGroups/galin-westus/providers/Microsoft.ApiManagement/service/galin-test-prod-1?api-version=2018-06-01-preview"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apim-ingress-pod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apim-ingress-pod
+  template:
+    metadata:
+      labels:
+        app: apim-ingress-pod
+    spec:
+      imagePullSecrets:
+        - name: apimdev
+      containers:
+        - name: azure-apim-gateway
+          image: apimdev.azurecr.io/azure-api-management/gateway:1.2.0-ingress-3
+          ports:
+            - name: http
+              containerPort: 8080
+            - name: https
+              containerPort: 8081
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          env:
+            - name: k8s.ingress.namespace
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: k8s.ingress.enabled
+              value: "true"
+            - name: config.service.auth
+              valueFrom:
+                secretKeyRef:
+                  name: k8se-gw-token
+                  key: value
+          envFrom:
+            - configMapRef:
+                name: azure-apim-gateway-environment
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: apim-ingress-service
+spec:
+  selector:
+    app: apim-ingress-pod
+  type: LoadBalancer
+  ports:
+    - port: 80
+      name: ingress-http
+      targetPort: 8080
+    - port: 443
+      name: ingress-https
+      targetPort: 8081
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: ingress-rbac
+subjects:
+  - kind: ServiceAccount
+    name: default
+    namespace: gw
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+
