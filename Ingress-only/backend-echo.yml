@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpecho-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: echo-pod
+  template:
+    metadata:
+      labels:
+        app: echo-pod
+    spec:
+      containers:
+        - name: echo-container
+          image: mendhak/http-https-echo:17
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "1m"
+          ports:
+            - containerPort: 8080 
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-service
+spec:
+  type: ClusterIP
+  selector:
+    app: echo-pod
+  ports:
+    - port: 8080
+      targetPort: 8080
