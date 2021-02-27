@@ -1,6 +1,6 @@
 # Kubernetes Ingress and Cloud confguration in Self-Hosted Gateway
 
-This is continuation from `Ingress Only` walkthrough where API Management Self-hosted gateway was deployed and configured to read Ingress rules in Kubernetes cluster. If you are starting clean, please execute following commands to get to the latest state:
+This is a continuation of the [Ingress Only](../Ingress-only) walkthrough where an API Management Self-hosted gateway was deployed and configured to read Ingress rules in a Kubernetes cluster. If you are starting clean, please execute the following commands to get to the latest state:
 
 ```
 kubectl create namespace gw
@@ -10,40 +10,52 @@ kubectl apply -f ingress.yml -n=gw
 ```
 
 ## Walkthrough
-At this point Self-hosted gateway should be deployed and confgured according to Ingress Rules to expose `Echo` service. 
-Next let's follow the article on how to [Deploy a self-hosted gateway to Kubernetes](https://docs.microsoft.com/en-us/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes). 
-For this purpose `ingress-deployment.yml` is changed to include  `config.service.endpoint` and `config.service.auth` variables. The final state is saved to `ingress-deployment-cloud.yml`.
-Before deploying please make sure to replace the appropriate values from API Management service in [portal.azure.com](portal.azure.com):
-1.  `config.service.endpoint` - [line 14](ingress-deployment-cloud.yml#L14)
-1. `config.service.auth` - [line 7](ingress-deployment-cloud.yml#L7)
+At this point, a self-hosted gateway should be deployed and configured according to Ingress Rules to expose the `Echo` service.
+ 
+Now create a self-hosted gateway resource in your API Management instance and prepare to deploy the self-hosted gateway component to your Kubernetes cluster. Follow steps 1 - 5 (**only**) in [Deploy a self-hosted gateway to Kubernetes](https://docs.microsoft.com/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes).
 
-`kubectl apply -f ingress-deployment-cloud.yml -n=gw`
+Continue with the following steps:
 
-### Testing HTTP calls
-To test a runtime call, the APIs needs to be assigned to the gateway. 
-the example below is using [Petstore APIs](https://petstore.swagger.io/) imported into API Management service and assinged to the self-hosted gateway. In Azure portal the configuration looks like this:
+1. In the [Azure portal](https://portal.azure.com), select your gateway resource.
+1. On the **Deployment** page, take note of the values of **Token** and **Configuration URL**.
+  ![APIs in self-hosted gateway](gateway-config.png)
+1. Download the [deployment template](ingress-deployment-cloud.yml) `ingress-deployment-cloud.yml`.
+1. Before deploying, be sure to replace the following values for your endpoint, noted previously.
+    1. `config.service.auth` - [line 7](ingress-deployment-cloud.yml#L7)
+    1.  `config.service.endpoint` - [line 14](ingress-deployment-cloud.yml#L14)
+1. Deploy the gateway.
+   ```
+    > kubectl apply -f ingress-deployment-cloud.yml -n=gw`
+    ```
+### Test HTTP calls
+To test a runtime call, APIs needs to be assigned to the gateway. 
+
+The following example below uses [Petstore APIs](https://petstore.swagger.io/) imported into API Management service and assigned to the self-hosted gateway. 
+
+In The Azure portal the configuration looks like this:
 
 ![APIs in self-hosted gateway](gateway-apis.png)
 
 #### Get external IP address
-Following command returns the external ip address to which we can test the call
+
+The following command returns the external IP address to which we can test the call.
 ```
 > kubectl get service apim-ingress-service -n=gw4
 NAME                   TYPE           CLUSTER-IP     EXTERNAL-IP    PORT(S)                      AGE
 apim-ingress-service   LoadBalancer   10.0.100.231   40.125.75.211   80:31171/TCP,443:31959/TCP   27m
 ```
 
-Now that we have everything configured, let's make an HTTP call. Using an external IP address `40.125.75.211` in the case above:
+Now that we have everything configured, let's make an HTTP call. Using an external IP address `40.125.75.211` shown in the preceding case, and passing the subscription key in a header:
 ```
-> curl http://40.125.75.211/pet/store/inventory
+> curl -H "Ocp-Apim-Subscription-Key: <subscription key>" http://40.125.75.211/pet/store/inventory
 {"sold":8,"SOLD":1,"string":306,"pending":3,"available":663,"avalible":1}
 ```
- 
+
 ### Troubleshooting
 In case of difficulties, there are several things to check in the logs for the pod: 
 
 #### Ensure k8s.ingress.enabled flag is set
-Following excerpt from the logs would provide this clue
+The following excerpt from the logs would provide this clue.
 ```
 [Info] 2021-02-8T11:01:48.803 [ConfigIngressName], message: Starting gateway 5f56585f12db2b1b302ee653 in namespace gw4 and using prefix 4b26700a for all events to disambiguate K8 events., source: KubernetesConfigurationRepositoryProvider
 [33m[Warn] 2021-02-8T11:01:49.309 [LoadBackupLocationNotFound], message: /apim/config, source: FileBackupProvider
@@ -61,8 +73,8 @@ Following excerpt from the logs would provide this clue
 [Info] 2021-02-8T11:01:58.907 [IngressWatcherInitialized], message: 147765571, source: KubernetesConfigurationRepositoryProvider
 ```
 
-#### Ensure 
-Following traces show cloud configuration
+#### Ensure the gateway is connected to API Management 
+The following traces show cloud configuration.
 ```
 
 [Info] 2021-02-8T11:01:59.007 [ConfigStarted], message: Connected service is enabled. 'config.service.endpoint' is set., source: CompositConfigurationRepositoryProvider

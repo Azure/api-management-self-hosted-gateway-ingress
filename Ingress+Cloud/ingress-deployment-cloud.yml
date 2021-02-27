@@ -1,17 +1,17 @@
 apiVersion: v1
 kind: Secret
 metadata:
-  name: k8se-gw-token
+  name: my-gw-token
 type: Opaque
 stringData:
-  value: "GatewayKey  ="
+  value: "GatewayKey my-gw&202103281825&QxxxxxxxxxxxxxxxxxQykD2gAupAsOCCo6GgaVekN+2gkmzI1lReQ0yHDKfw741xxxxxxxxxx=="
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: azure-apim-gateway-environment
 data:
-  config.service.endpoint: "https://galin-test-prod-1.management.azure-api.net/subscriptions/a39747ec-b5c4-45de-82a1-935083247170/resourceGroups/galin-westus/providers/Microsoft.ApiManagement/service/galin-test-prod-1?api-version=2018-06-01-preview"
+    config.service.endpoint: "https://apim-hello-world.management.azure-api.net/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourceGroups/myResourceGroup/providers/Microsoft.ApiManagement/service/apim-hello-world?api-version=2019-12-01"
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -31,7 +31,7 @@ spec:
         - name: apimdev
       containers:
         - name: azure-apim-gateway
-          image: apimdev.azurecr.io/azure-api-management/gateway:1.2.0-ingress-3
+          image: mcr.microsoft.com/azure-api-management/gateway:1.2.0-ingress-3
           ports:
             - name: http
               containerPort: 8080
@@ -86,4 +86,3 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
-
