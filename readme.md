@@ -9,7 +9,7 @@ The samples in this repository show how to set up an Azure API Management self-h
 
 [Self-hosted gateway](https://aka.ms/apim/sputnik/overview) is a feature of [Azure API Management](https://aka.ms/apimrocks). The self-hosted gateway, a containerized version of the API Management gateway component, expands API Management support for hybrid and multi-cloud environments. It allows customers to manage all of their APIs using a single API management solution without compromising security, compliance, or performance. Customers can deploy the self-hosted gateways to the same environments where they host their APIs while continuing to manage them from an associated API Management service in Azure.
 
-See [Azure API Management self-hosted gateway samples](https://github.com/Azure/api-management-self-hosted-gateway)
+See more [Azure API Management self-hosted gateway samples](https://github.com/Azure/api-management-self-hosted-gateway).
 
 ## Kubernetes Ingress support in self-hosted gateway
 
@@ -53,8 +53,8 @@ Periodically, the gateway creates a snapshot of the most recent effective confgu
 1. Self-hosted gateway boots on a Kubernetes cluster in hybrid configuration mode.
 1. Cloud configuration adds a `/users` API. 
 1. Ingress adds a new `/users` route, overwriting the cloud API.
-1. All runtime calls will be executed as per Ingress confguration
+1. All runtime calls will be executed as per Ingress confguration.
 
 Now if the pod is torn down or nodes reboot, configuration will be loaded as:
-1. Load the Ingress object, which has `/users` route
+1. Load the Ingress object, which has `/users` route.
 1. Cloud confguration will overwrite `/users` route from snapshot. 
