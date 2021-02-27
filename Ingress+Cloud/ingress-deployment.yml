@@ -16,7 +16,7 @@ spec:
         - name: apimdev
       containers:
         - name: azure-apim-gateway
-          image: apimdev.azurecr.io/azure-api-management/gateway:1.2.0-ingress-3
+          image: mcr.microsoft.com/azure-api-management/gateway:1.2.0-ingress-3
           ports:
             - name: http
               containerPort: 8080
