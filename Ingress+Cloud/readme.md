@@ -1,6 +1,8 @@
-# Kubernetes Ingress and Cloud confguration in Self-Hosted Gateway
+# Kubernetes Ingress and Cloud configuration in Self-Hosted Gateway
 
-This is a continuation of the [Ingress Only](../Ingress-only) walkthrough where an API Management Self-hosted gateway was deployed and configured to read Ingress rules in a Kubernetes cluster. If you are starting clean, please execute the following commands to get to the latest state:
+This is a continuation of the [Ingress Only](../Ingress-only) walkthrough where an API Management self-hosted gateway was deployed and configured to read Ingress rules in a Kubernetes cluster. This example adds a cloud configuration for API Management. This support is currently experimental.
+
+If you are starting clean, please execute the following commands to get to the latest state:
 
 ```
 kubectl create namespace gw
@@ -12,7 +14,7 @@ kubectl apply -f ingress.yml -n=gw
 ## Walkthrough
 At this point, a self-hosted gateway should be deployed and configured according to Ingress Rules to expose the `Echo` service.
  
-Now create a self-hosted gateway resource in your API Management instance and prepare to deploy the self-hosted gateway component to your Kubernetes cluster. Follow steps 1 - 5 (**only**) in [Deploy a self-hosted gateway to Kubernetes](https://docs.microsoft.com/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes).
+Now create a self-hosted gateway resource in your API Management instance and prepare to deploy the self-hosted gateway component to your Kubernetes cluster. Follow steps 1 - 4 (**only**) in [Deploy a self-hosted gateway to Kubernetes](https://docs.microsoft.com/azure/api-management/how-to-deploy-self-hosted-gateway-kubernetes).
 
 Continue with the following steps:
 
@@ -25,14 +27,14 @@ Continue with the following steps:
     1.  `config.service.endpoint` - [line 14](ingress-deployment-cloud.yml#L14)
 1. Deploy the gateway.
    ```
-    > kubectl apply -f ingress-deployment-cloud.yml -n=gw`
-    ```
+   kubectl apply -f ingress-deployment-cloud.yml -n=gw
+   ```
 ### Test HTTP calls
-To test a runtime call, APIs needs to be assigned to the gateway. 
+To test a runtime call, APIs need to be assigned to the gateway. 
 
-The following example below uses [Petstore APIs](https://petstore.swagger.io/) imported into API Management service and assigned to the self-hosted gateway. 
+The following example uses [Petstore APIs](https://petstore.swagger.io/) imported into API Management service and assigned to the self-hosted gateway. 
 
-In The Azure portal the configuration looks like this:
+In the Azure portal the configuration looks like this:
 
 ![APIs in self-hosted gateway](gateway-apis.png)
 
