@@ -1,6 +1,6 @@
 # Kubernetes Ingress support in Self-Hosted Gateway
 
-This sample and walkthrough show how to enable Kubernetes Ingress in an Azure API Management self-hosted gateway. See [Kubernetes Ingress support in Self-Hosted Gateway]() for background and other samples. This support is currently experimental.
+This sample and walkthrough show how to enable Kubernetes Ingress in an Azure API Management self-hosted gateway. See [Kubernetes Ingress support in Self-Hosted Gateway](https://github.com/Azure/api-management-self-hosted-gateway-ingress) for background and other samples. This support is currently experimental.
 
 To enable Ingress support, the following environment variables are set up using a [deployment template](ingress-deployment.yml#L29-L34):
 
@@ -9,7 +9,7 @@ To enable Ingress support, the following environment variables are set up using 
 - `k8s.ingress.namespace` - optional namespace where Ingress is read from
 
 ## Walkthrough
-In this example, we set up a namespace `gw` to contain all resources. The self-hosted gateway configuration includes [RBAC configuration](ingress-deployment.yml#L54) that specifies this namespace, so it is used consistently.
+In this example, we set up a namespace `gw` to contain all resources. The self-hosted gateway configuration includes [RBAC configuration](ingress-deployment.yml#L54) that specifies this namespace, so we use the namespace consistently.
 
 One of the deployments is the [mendhak/http-https-echo:17](https://github.com/mendhak/docker-http-https-echo) container, which echoes back all HTTP/HTTPS traffic. See the latest container image tags on [Docker Hub](https://hub.docker.com/r/mendhak/http-https-echo/tags?page=1&ordering=last_updated).
 
@@ -103,10 +103,10 @@ Now that we have everything configured, let's make an HTTP call. Using an extern
 To confgure hostname we need to do following steps:
 1. Configure TLS certificate 
 1. Configure hostname in the Ingress
-1. Setup DNS server to the external IP address
+1. Set up DNS server to the external IP address
 
 ### 1. Generate TLS certificate
-The following commands will generate a TSL certificate and upload it as a secret to the Kubernetes cluster, where the self-hosted gateway can access it. For the purpose we can use [OpenSSL](https://github.com/openssl/openssl#download).
+The following commands will generate a TLS certificate and upload it as a secret to the Kubernetes cluster, where the self-hosted gateway can access it. For this purpose we can use [OpenSSL](https://github.com/openssl/openssl#download).
 
 ```
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout www.contoso.com.key -out www.contoso.com.cer -subj "/CN=www.contoso.com/O=www.contoso.com"
@@ -115,7 +115,7 @@ kubectl create secret tls tls-www-contoso-com --key www.contoso.com.key --cert w
 ``` 
 
 ### 2. Configure hostname in the Ingress object
-There is a separate file [ingress-tls.yml](ingress-tls.yml) which has the full configuration, but the main changes are in the section [section](ingress-tls.yml#L9-L12). Let's apply new rules.
+There is a separate file [ingress-tls.yml](ingress-tls.yml) which has the full configuration, but the main changes are in [this section](ingress-tls.yml#L9-L12). Let's apply new rules.
 
 ```
 > kubectl apply -f .\ingress-tls.yml -n=gw
