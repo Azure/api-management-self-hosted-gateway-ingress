@@ -20,7 +20,7 @@ Continue with the following steps:
 
 1. In the [Azure portal](https://portal.azure.com), select your gateway resource.
 1. On the **Deployment** page, take note of the values of **Token** and **Configuration URL**.
-  ![APIs in self-hosted gateway](gateway-config.png)
+  ![Self-hosted gateway configuration](gateway-config.png)
 1. Download the [deployment template](ingress-deployment-cloud.yml) `ingress-deployment-cloud.yml`.
 1. Before deploying, be sure to replace the following values for your endpoint, noted previously.
     1. `config.service.auth` - [line 7](ingress-deployment-cloud.yml#L7)
