@@ -27,11 +27,9 @@ spec:
       labels:
         app: apim-ingress-pod
     spec:
-      imagePullSecrets:
-        - name: apimdev
       containers:
         - name: azure-apim-gateway
-          image: mcr.microsoft.com/azure-api-management/gateway:1.2.0-ingress-3
+          image: mcr.microsoft.com/azure-api-management/gateway:1.2.0-preview-2
           ports:
             - name: http
               containerPort: 8080
