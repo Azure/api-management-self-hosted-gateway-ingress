@@ -1,21 +1,21 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress
-  annotations:
-    kubernetes.io/ingress.class: "azure-api-management/gateway"
-    ingressclass.kubernetes.io/is-default-class: "true"
 spec:
   tls:
     - hosts:
         - www.contoso.com
       secretName: tls-www-contoso-com
+  ingressClassName: "azure-api-management/gateway"
   rules:
     - host: "www.contoso.com"
-      http: 
+      http:
         paths:
-        - path: /echo-tls
-          pathType: Prefix
-          backend:
-            serviceName: echo-service
-            servicePort: 8080 
+          - path: /echo-tls
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-service
+                port:
+                  number: 8080

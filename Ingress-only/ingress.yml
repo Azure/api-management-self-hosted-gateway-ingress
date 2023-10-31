@@ -1,15 +1,16 @@
-apiVersion: networking.k8s.io/v1beta1
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress
-  annotations:
-    kubernetes.io/ingress.class: "azure-api-management/gateway"
 spec:
+  ingressClassName: "azure-api-management/gateway"
   rules:
-  - http:
-      paths: 
-      - path: /echo
-        pathType: Prefix
-        backend:
-          serviceName: echo-service
-          servicePort: 8080 
+    - http:
+        paths:
+          - path: /echo
+            pathType: Prefix
+            backend:
+              service:
+                name: echo-service
+                port:
+                  number: 8080
